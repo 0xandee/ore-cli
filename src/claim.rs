@@ -49,7 +49,7 @@ impl Miner {
             .await
         {
             Ok(sig) => {
-                println!("Claimed {:} ORE to account {:}", amountf, beneficiary);
+                println!("\x1b[32mClaimed {:} ORE to account {:}\x1b[0m", amountf, beneficiary);
                 println!("{:?}", sig);
             }
             Err(err) => {

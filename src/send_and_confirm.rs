@@ -20,8 +20,8 @@ use tokio::time::sleep;
 use crate::Miner;
 
 const RPC_RETRIES: usize = 1;
-const GATEWAY_RETRIES: usize = 4;
-const CONFIRM_RETRIES: usize = 4;
+const GATEWAY_RETRIES: usize = 9;
+const CONFIRM_RETRIES: usize = 1;
 
 impl Miner {
     pub async fn send_and_confirm(
@@ -83,17 +83,17 @@ impl Miner {
             match client.send_transaction_with_config(&tx, send_cfg).await {
                 Ok(sig) => {
                     sigs.push(sig);
-                    println!("{:?}", sig);
+                    // println!("{:?}", sig);
 
                     // Confirm tx
                     if skip_confirm {
                         return Ok(sig);
                     }
                     for _ in 0..CONFIRM_RETRIES {
-                        std::thread::sleep(Duration::from_millis(2000));
+                        std::thread::sleep(Duration::from_millis(8000));
                         match client.get_signature_statuses(&sigs).await {
                             Ok(signature_statuses) => {
-                                println!("Confirms: {:?}", signature_statuses.value);
+                                // println!("Confirms: {:?}", signature_statuses.value);
                                 for signature_status in signature_statuses.value {
                                     if let Some(signature_status) = signature_status.as_ref() {
                                         if signature_status.confirmation_status.is_some() {
@@ -105,7 +105,7 @@ impl Miner {
                                                 TransactionConfirmationStatus::Processed => {}
                                                 TransactionConfirmationStatus::Confirmed
                                                 | TransactionConfirmationStatus::Finalized => {
-                                                    println!("Transaction landed!");
+                                                    println!("\x1b[32mTransaction landed!\x1b[0m");
                                                     return Ok(sig);
                                                 }
                                             }
@@ -118,16 +118,16 @@ impl Miner {
 
                             // Handle confirmation errors
                             Err(err) => {
-                                println!("Error: {:?}", err);
+                                println!("CONFIRM_RETRIES Error: {:?}", err);
                             }
                         }
                     }
-                    println!("Transaction did not land");
+                    // println!("Transaction did not land");
                 }
 
                 // Handle submit errors
                 Err(err) => {
-                    println!("Error {:?}", err);
+                    println!("ATTEMPT_RETRIES Error {:?}", err);
                 }
             }
             stdout.flush().ok();

@@ -13,6 +13,8 @@ use solana_sdk::{
     signature::Signer,
 };
 
+// use tokio::time::sleep;
+
 use crate::{
     cu_limits::{CU_LIMIT_MINE, CU_LIMIT_RESET},
     utils::{get_clock_account, get_proof, get_treasury},
@@ -27,33 +29,35 @@ impl Miner {
         // Register, if needed.
         let signer = self.signer();
         self.register().await;
-        let mut stdout = stdout();
+        // let mut stdout = stdout();
         let mut rng = rand::thread_rng();
 
         // Start mining loop
-        loop {
-            // Fetch account state
-            let balance = self.get_ore_display_balance().await;
-            let treasury = get_treasury(self.cluster.clone()).await;
-            let proof = get_proof(self.cluster.clone(), signer.pubkey()).await;
-            let rewards =
-                (proof.claimable_rewards as f64) / (10f64.powf(ore::TOKEN_DECIMALS as f64));
-            let reward_rate =
-                (treasury.reward_rate as f64) / (10f64.powf(ore::TOKEN_DECIMALS as f64));
-            stdout.write_all(b"\x1b[2J\x1b[3J\x1b[H").ok();
-            println!("Balance: {} ORE", balance);
-            println!("Claimable: {} ORE", rewards);
-            println!("Reward rate: {} ORE", reward_rate);
-
-            // Escape sequence that clears the screen and the scrollback buffer
-            println!("\nMining for a valid hash...");
-            let (next_hash, nonce) =
-                self.find_next_hash_par(proof.hash.into(), treasury.difficulty.into(), threads);
-
-            // Submit mine tx.
-            // Use busses randomly so on each epoch, transactions don't pile on the same busses
-            println!("\n\nSubmitting hash for validation...");
+        // loop {
             loop {
+                // Fetch account state
+                // let balance = self.get_ore_display_balance().await;
+                let treasury = get_treasury(self.cluster.clone()).await;
+                let proof = get_proof(self.cluster.clone(), signer.pubkey()).await;
+                // let rewards =
+                //     (proof.claimable_rewards as f64) / (10f64.powf(ore::TOKEN_DECIMALS as f64));
+                // let reward_rate =
+                //     (treasury.reward_rate as f64) / (10f64.powf(ore::TOKEN_DECIMALS as f64));
+                // stdout.write_all(b"\x1b[2J\x1b[3J\x1b[H").ok();
+                // println!("\nGetting newest hash...");
+                // println!("Balance: {} ORE", balance);
+                // println!("Claimable: {} ORE", rewards);
+                // println!("Reward rate: {} ORE", reward_rate);
+
+                // Escape sequence that clears the screen and the scrollback buffer
+                println!("\nGetting newest hash...");
+                let (next_hash, nonce) =
+                    self.find_next_hash_par(proof.hash.into(), treasury.difficulty.into(), threads);
+
+                // Submit mine tx.
+                // Use busses randomly so on each epoch, transactions don't pile on the same busses
+                println!("\n\nSubmitting hash for validation...");
+                
                 // Reset epoch, if needed
                 let treasury = get_treasury(self.cluster.clone()).await;
                 let clock = get_clock_account(self.cluster.clone()).await;
@@ -92,14 +96,14 @@ impl Miner {
                 {
                     Ok(sig) => {
                         println!("Success: {}", sig);
-                        break;
+                        // break;
                     }
                     Err(_err) => {
                         // TODO
                     }
                 }
             }
-        }
+        // }
     }
 
     async fn find_bus_id(&self, reward_rate: u64) -> Bus {

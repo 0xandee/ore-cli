@@ -33,7 +33,6 @@ struct Args {
         long,
         value_name = "NETWORK_URL",
         help = "Network address of your RPC provider",
-        default_value = "https://api.mainnet-beta.solana.com"
     )]
     rpc: String,
 
@@ -48,7 +47,6 @@ struct Args {
         long,
         value_name = "MICROLAMPORTS",
         help = "Number of microlamports to pay as priority fee per transaction",
-        default_value = "0"
     )]
     priority_fee: u64,
 
