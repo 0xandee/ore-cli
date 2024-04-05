@@ -13,11 +13,12 @@ THREADS=${4:-$DEFAULT_THREADS}
 
 # Loop indefinitely
 while true; do
-  echo "Checking reward per 5 minute(s)..."
+  echo "Starting the process..."
   RPC_URL=${RPC_URLS[$RANDOM % ${#RPC_URLS[@]}]}
+  echo "Using RPC URL: ${RPC_URL}"
 
-  # Execute the command
-  eval "./target/release/ore --rpc ${RPC_URL} --keypair ${KEY} --priority-fee ${FEE} rewards"
-
-  sleep 300
+  eval "./target/release/ore --rpc ${RPC_URL} --keypair ${KEY} --priority-fee ${FEE} claim"
+  
+  echo "Process exited with an error. Restarting in 5 seconds..."
+  sleep 5
 done
